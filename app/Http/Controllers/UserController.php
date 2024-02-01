@@ -57,7 +57,7 @@ class UserController extends Controller
         }
     }
 
-    public function profile(Request $request)
+    public function profile()
     {
        return Auth::user();
     }

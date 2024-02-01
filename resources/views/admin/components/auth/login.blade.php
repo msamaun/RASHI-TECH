@@ -16,7 +16,7 @@
                         <hr/>
                         <div class="float-end mt-3">
                         <span>
-                            <a class="text-center ms-3 h6" href="{{route('user_register')}}">Sign Up </a>
+                            <a class="text-center ms-3 h6" href="{{route('register')}}">Sign Up </a>
                         </span>
                         </div>
                     </div>

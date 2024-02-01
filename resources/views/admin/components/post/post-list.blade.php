@@ -4,7 +4,7 @@
             <div class="card px-5 py-5">
                 <div class="row justify-content-between ">
                     <div class="align-items-center col">
-                        <h4>Category</h4>
+                        <h4>Post List</h4>
                     </div>
                     <div class="align-items-center col">
                         <button data-bs-toggle="modal" data-bs-target="#create-modal" class="float-end btn m-0 bg-gradient-primary">Create</button>
@@ -55,9 +55,9 @@
             res.data['data'].forEach(function (item,index) {
                 let row=`<tr>
                     <td>${index+1}</td>
-                    <td><img class="w-10" src="${item['image']}"/></td>
-                    <td>${item['title']}</td>
-                    <td>${item['body']}</td>
+                    <td><img class="w-25" src="${item['image']}"/></td>
+                    <td>${item['title'].substring(0,10)+'...'}</td>
+                    <td>${item['body'].substring(0,60)+'...'}</td>
                     <td><span class="badge bg-${item['status'] == 0 ? 'success' : 'danger'}">${item['status'] == 0 ? 'Active' : 'Inactive'}</span></td>
                     <td>
                         <button data-id="${item['id']}" class="btn editBtn btn-sm btn-outline-success">Edit</button>
