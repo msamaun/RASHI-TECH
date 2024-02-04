@@ -93,15 +93,11 @@ class PostController extends Controller
     public function deletePost(Request $request)
     {
         try {
-            $request->validate([
-                'id' => 'required'
-            ]);
             $user_id = Auth::id();
             $post_id = $request->input('id');
             $filePath = $request->input('file_path');
             File::delete($filePath);
             return Post::where('id', $post_id)->where('user_id', $user_id)->delete();
-
         }
         catch (Exception $e) {
             return response()->json(['status' => 'fail', 'message' => $e->getMessage()]);
@@ -134,6 +130,25 @@ class PostController extends Controller
         catch (Exception $e) {
             return response()->json(['status' => 'fail', 'message' => $e->getMessage()]);
         }
+    }
+
+
+    public function postFilter(Request $request)
+    {
+        $user_id = Auth::id();
+        $FormDate = date('Y-m-d', strtotime($request->FormDate));
+        $ToDate = date('Y-m-d', strtotime($request->ToDate));
+
+        $post = Post::where('user_id', $user_id)->whereDate('created_at','>=',$FormDate)->whereDate('created_at','<=',$ToDate)->get();
+
+        $data = [
+            'post' => $post,
+            'user_id' => $user_id,
+            'FormDate' => $FormDate,
+            'ToDate' => $ToDate
+        ];
+
+        return response()->json(['status' => 'success', 'data' => $data]);
     }
 
 }

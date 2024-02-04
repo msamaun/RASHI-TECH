@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use App\Mail\OtpMail;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
@@ -68,28 +70,13 @@ class UserController extends Controller
             $request->validate([
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
-                'bio' => 'required|string|max:1000',
-                'phone' => 'required|string|max:255',
-                'image' => 'required|image|max:255',
+                'mobile' => 'required|string|max:255',
             ]);
-            $user_id = Auth::id();
-            $image = $request->file('image');
-            $t = time();
-            $filename = $image->getClientOriginalName();
-            $image_name =("{$user_id}-{$t}-{$filename}");
-            $image_url = "uploads/{$image_name}";
-
-            $image->move(public_path('uploads'), $image_name);
-
-            $filePath = $request->input('file_path');
-            File::delete($filePath);
 
             User::where('id', Auth::user()->id)->update([
                 'first_name' => $request->input('first_name'),
                 'last_name' => $request->input('last_name'),
-                'bio' => $request->input('bio'),
-                'phone' => $request->input('phone'),
-                'image' => $image_url,
+                'mobile' => $request->input('mobile'),
             ]);
 
             return response()->json(['status' => 'success', 'message' => 'Profile updated successfully']);
@@ -98,4 +85,77 @@ class UserController extends Controller
             return response()->json(['status' => 'failed', 'message' => $exception->getMessage()]);
         }
     }
+
+    public function logout()
+    {
+        Auth::user()->tokens()->delete();
+        return response()->json(['status' => 'success', 'message' => 'Logged out successfully']);
+    }
+
+    public function sentOtp(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|string|email',
+            ]);
+            $email = $request->input('email');
+            $otp = rand(100000, 999999);
+            $count = User::where('email', $email)->count();
+
+            if ($count > 0) {
+                Mail::to($email)->send(new OTPMail($otp));
+                User::where('email','=',$email)->update(['otp' => $otp]);
+                return response()->json(['status' => 'success', 'message' => 'Otp sent successfully']);
+            }
+            else {
+                return response()->json(['status' => 'failed', 'message' => 'Email not found']);
+            }
+        }
+        catch (Exception $exception) {
+            return response()->json(['status' => 'failed', 'message' => $exception->getMessage()]);
+        }
+    }
+
+    public function verifyOtp(Request $request)
+    {
+        try {
+           $request->validate([
+               'email' => 'required|string|email',
+               'otp' => 'required|string',
+           ]);
+           $email = $request->input('email');
+           $otp = $request->input('otp');
+
+           $user = User::where('email', $email)->where('otp', $otp)->first();
+
+           if (!$user) {
+               return response()->json(['status' => 'failed', 'message' => 'Invalid otp']);
+           }
+
+           User::where('email','=', $email)->update(['otp' => 0]);
+           $token = $user->createToken('authToken')->plainTextToken;
+           return response()->json(['status' => 'success', 'message' => 'Otp verified successfully', 'token' => $token]);
+        }
+        catch (Exception $exception) {
+            return response()->json(['status' => 'failed', 'message' => $exception->getMessage()]);
+        }
+    }
+
+    public function changePassword(Request $request)
+    {
+        try {
+            $request->validate([
+                'password' => 'required|string',
+            ]);
+            $id = Auth::id();
+            $password = $request->input('password');
+            User::where('id', $id)->update(['password' => Hash::make($password)]);
+            return response()->json(['status' => 'success', 'message' => 'Password changed successfully']);
+
+        }
+        catch (Exception $exception) {
+            return response()->json(['status' => 'failed', 'message' => $exception->getMessage()]);
+        }
+    }
+
 }

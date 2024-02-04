@@ -11,6 +11,17 @@
                     </div>
                 </div>
                 <hr class="bg-secondary"/>
+                <div class="card col-3 ">
+
+                     <label for="search">Start Date</label>
+                      <input type="date" id="FormDate" class="form-control"/>
+
+
+                      <label for="search">Start Date</label>
+                      <input type="date" id="ToDate" class="form-control"/>
+
+                    <button onclick="postFilter()" class="btn mt-3 bg-gradient-primary">Download</button>
+                </div>
                 <div class="table-responsive">
                     <table class="table" id="tableData">
                         <thead>
@@ -89,6 +100,43 @@
             unauthorized(e)
         }
 
+    }
+    async function postFilter() {
+        let FormDate = document.getElementById('FormDate').value;
+        let ToDate = document.getElementById('ToDate').value;
+
+        if(FormDate === 0 || ToDate === 0){
+            errorToast('Please Select Date');
+        }
+        else{
+            let response = await axios.get(`/post_filter/${FormDate}/${ToDate}`,HeaderToken());
+
+            let tableList=$("#tableList");
+            let tableData=$("#tableData");
+
+            tableData.DataTable().destroy();
+            tableList.empty();
+
+
+            response.data.data['post'].forEach(function (item,index) {
+                let data=`<tr>
+                    <td>${index+1}</td>
+                    <td><img class="w-25" src="${item['image']}"/></td>
+                    <td>${item['title'].substring(0,10)+'...'}</td>
+                    <td>${item['body'].substring(0,60)+'...'}</td>
+                    <td><span class="badge bg-${item['status'] == 0 ? 'success' : 'danger'}">${item['status'] == 0 ? 'Active' : 'Inactive'}</span></td>
+                    <td>
+                        <button data-id="${item['id']}" class="btn editBtn btn-sm btn-outline-success">Edit</button>
+                        <button data-id="${item['id']}" class="btn deleteBtn btn-sm btn-outline-danger">Delete</button>
+                    </td>
+                 </tr>`
+                tableList.append(data)
+            })
+
+
+
+
+        }
     }
 
 

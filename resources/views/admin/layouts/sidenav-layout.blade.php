@@ -58,7 +58,7 @@
                         <h6>User Name</h6>
                         <hr class="user-dropdown-divider  p-0"/>
                     </div>
-                    <a href="{{url('/userProfile')}}" class="side-bar-item">
+                    <a href="{{route('user_profile')}}" class="side-bar-item">
                         <span class="side-bar-item-caption">Profile</span>
                     </a>
                     <a onclick="logout()" class="side-bar-item">
@@ -117,11 +117,11 @@
 <script>
     async function logout(){
         try{
-            let res = await axios.get('/logout',HeaderToken());
+            let res = await axios.get('/user_logout',HeaderToken());
 
             localStorage.clear();
             sessionStorage.clear();
-            window.location.href = '/user-login';
+            window.location.href = '/login';
         }
         catch (e){
             errorToast(e.response.data.message);
